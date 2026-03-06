@@ -20,3 +20,90 @@ pull_request_rules:
         method: squash
         strict: smart+fasttrack
         commit_message: title+body
+class APIBase(object):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        api_secret: Optional[str] = None,
+        key_file: Optional[Union[IO, str]] = None,
+        base_url=None,
+        timeout: Optional[int] = None,
+        verbose: Optional[bool] = False,
+    ):
+        # Use environment variables if not provided
+        if api_key is None:
+            api_key = os.getenv(API_ENV_KEY)
+        if api_secret is None:
+            api_secret = os.getenv(API_SECRET_ENV_KEY)
+
+        if (api_key or api_secret) and key_file is not None:
+            raise ValueError("Cannot specify both api_key/api_secret and key_file.")
+
+        if key_file is not None:
+            try:
+                if isinstance(key_file, str):
+                    with open(key_file, "r") as file:
+                        key_json = json.load(file)
+                else:
+                    key_json = json.load(key_file)
+                api_key = key_json.get("name")
+                api_secret = key_json.get("privateKey")
+                if not api_key or not api_secret:
+                    raise ValueError("Key file missing 'name' or 'privateKey'.")
+            except json.JSONDecodeError as e:
+                logging.error(f"Error decoding JSON from key_file: {e}")
+                raise ValueError(f"Invalid JSON in key_file: {e}")
+
+        self.is_authenticated = False
+        if api_key and api_secret:
+            self.api_key = api_key
+            self.api_secret = api_secret  # Only decode if necessary
+            self.is_authenticated = True
+        elif api_key or api_secret:
+            raise ValueError("Both api_key and api_secret must be provided together.")
+
+        self.base_url = base_url
+        self.timeout = timeoutclass APIBase(object):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        api_secret: Optional[str] = None,
+        key_file: Optional[Union[IO, str]] = None,
+        base_url=None,
+        timeout: Optional[int] = None,
+        verbose: Optional[bool] = False,
+    ):
+        # Use environment variables if not provided
+        if api_key is None:
+            api_key = os.getenv(API_ENV_KEY)
+        if api_secret is None:
+            api_secret = os.getenv(API_SECRET_ENV_KEY)
+
+        if (api_key or api_secret) and key_file is not None:
+            raise ValueError("Cannot specify both api_key/api_secret and key_file.")
+
+        if key_file is not None:
+            try:
+                if isinstance(key_file, str):
+                    with open(key_file, "r") as file:
+                        key_json = json.load(file)
+                else:
+                    key_json = json.load(key_file)
+                api_key = key_json.get("name")
+                api_secret = key_json.get("privateKey")
+                if not api_key or not api_secret:
+                    raise ValueError("Key file missing 'name' or 'privateKey'.")
+            except json.JSONDecodeError as e:
+                logging.error(f"Error decoding JSON from key_file: {e}")
+                raise ValueError(f"Invalid JSON in key_file: {e}")
+
+        self.is_authenticated = False
+        if api_key and api_secret:
+            self.api_key = api_key
+            self.api_secret = api_secret  # Only decode if necessary
+            self.is_authenticated = True
+        elif api_key or api_secret:
+            raise ValueError("Both api_key and api_secret must be provided together.")
+
+        self.base_url = base_url
+        self.timeout = timeout
